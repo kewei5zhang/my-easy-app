@@ -1,0 +1,8 @@
+apiVersion: v2
+description: an actually simple service
+name: simple-service
+version: 0.0.1
+dependencies:
+  - name: magic-service
+    version: 0.x.x
+    repository: "@magiceden"

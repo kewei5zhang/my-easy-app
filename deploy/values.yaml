@@ -1,0 +1,22 @@
+magic-service:
+  deployments:
+    easy-app:
+      replicaCount: 1
+      image: keweizhang/my-easy-app:latest
+      resources:
+        requests:
+          memory: 128Mi
+          cpu: 100m
+  services:
+    easy-app:
+      ports:
+        - port: 80
+      selector: easy-app
+  ingresses:
+    easy-app:
+      type: public
+      hosts:
+      - host: easy-app.magiceden.xyz
+        path: /
+        serviceName: easy-app
+        servicePort: 80

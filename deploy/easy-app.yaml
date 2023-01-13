@@ -1,0 +1,159 @@
+---
+# Source: simple-service/charts/magic-service/templates/services.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: easy-app-easy-app
+  labels:    
+    app: easy-app
+    chart: magic-service
+    release: easy-app
+    magiceden/git-commit: unknown
+    tags.datadoghq.com/env: production
+    tags.datadoghq.com/service: easy-app-easy-app
+    tags.datadoghq.com/version: unknown
+    tags.datadoghq.com/namespace: default
+    tags.datadoghq.com/deployment: easy-app-easy-app
+    tags.datadoghq.com/port: "8126"
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
+  selector:
+    app: easy-app
+    release: easy-app
+---
+# Source: simple-service/charts/magic-service/templates/deployments.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: easy-app-easy-app
+  labels:    
+    app: easy-app
+    chart: magic-service
+    release: easy-app
+    magiceden/git-commit: unknown
+    tags.datadoghq.com/env: production
+    tags.datadoghq.com/service: easy-app-easy-app
+    tags.datadoghq.com/version: unknown
+    tags.datadoghq.com/namespace: default
+    tags.datadoghq.com/deployment: easy-app-easy-app
+    tags.datadoghq.com/port: "8126"
+spec:
+  replicas: 1
+  minReadySeconds: 0
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:      
+      app: easy-app
+      release: easy-app
+  template:
+    metadata:
+      annotations:        
+        ad.datadoghq.com/easy-app.logs: '[{"source":"easy-app","service":"easy-app-easy-app"}]'
+      labels:        
+        app: easy-app
+        chart: magic-service
+        release: easy-app
+        magiceden/git-commit: unknown
+        tags.datadoghq.com/env: production
+        tags.datadoghq.com/service: easy-app-easy-app
+        tags.datadoghq.com/version: unknown
+        tags.datadoghq.com/namespace: default
+        tags.datadoghq.com/deployment: easy-app-easy-app
+        tags.datadoghq.com/port: "8126"        
+        magiceden/service: easy-app-easy-app
+    spec:
+      serviceAccountName: default
+      containers:      
+      - name: easy-app
+        image: keweizhang/my-easy-app:latest
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: DD_AGENT_HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: DD_ENTITY_ID
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.uid
+        - name: DD_ENV
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tags.datadoghq.com/env']
+        - name: DD_TRACE_AGENT_PORT
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tags.datadoghq.com/port']
+        - name: DD_SERVICE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tags.datadoghq.com/service']
+        - name: DD_SERVICE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tags.datadoghq.com/service']
+        - name: DD_TRACE_AGENT_HOSTNAME
+          valueFrom:
+            fieldRef:
+              fieldPath: status.hostIP
+        - name: DD_VERSION
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['tags.datadoghq.com/version']
+        - name: DD_RUNTIME_METRICS_ENABLED
+          value: "true"
+        - name: DD_TRACE_ANALYTICS_ENABLED
+          value: "true"
+        - name: DD_LOGS_INJECTION
+          value: "true"
+        - name: DD_PROFILING_ENABLED
+          value: "true"
+        - name: DD_APPSEC_ENABLED
+          value: "true"
+        resources:
+          limits:
+            memory: 1000Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+---
+# Source: simple-service/charts/magic-service/templates/ingresses.yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: easy-app-easy-app
+  annotations:
+    kubernetes.io/ingress.class: kong-private
+  labels:    
+    app: easy-app
+    chart: magic-service
+    release: easy-app
+    magiceden/git-commit: unknown
+    tags.datadoghq.com/env: production
+    tags.datadoghq.com/service: easy-app-easy-app
+    tags.datadoghq.com/version: unknown
+    tags.datadoghq.com/namespace: default
+    tags.datadoghq.com/deployment: easy-app-easy-app
+    tags.datadoghq.com/port: "8126"
+spec:
+  tls:
+  - hosts:
+      - easy-app.magiceden.xyz
+  rules:
+  - host: easy-app.magiceden.xyz
+    http:
+      paths:
+      - path: /
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: easy-app-easy-app
+            port:
+              number: 80
